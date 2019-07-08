@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,7 +24,7 @@ import static com.bytedance.camera.demo.utils.Utils.MEDIA_TYPE_IMAGE;
 import static com.bytedance.camera.demo.utils.Utils.MEDIA_TYPE_VIDEO;
 import static com.bytedance.camera.demo.utils.Utils.getOutputMediaFile;
 
-public class CustomCameraActivity extends AppCompatActivity {
+public class CustomCameraActivity extends AppCompatActivity implements Camera.AutoFocusCallback {
 
     private SurfaceView mSurfaceView;
     private Camera mCamera;
@@ -56,6 +57,7 @@ public class CustomCameraActivity extends AppCompatActivity {
             public void surfaceCreated(SurfaceHolder holder) {
                 try {
                     mCamera.setPreviewDisplay(holder);
+                    mCamera.getParameters().setFocusMode(Camera.Parameters.FLASH_MODE_AUTO);
                     mCamera.startPreview();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -87,8 +89,12 @@ public class CustomCameraActivity extends AppCompatActivity {
             //todo 录制，第一次点击是start，第二次点击是stop
             if (isRecording) {
                 //todo 停止录制
+                Toast.makeText(CustomCameraActivity.this, "视频文件存储在：/storage/emulated/0/Pictures/CameraDemo/", Toast.LENGTH_SHORT).show();
                 isRecording = false;
                 releaseMediaRecorder();
+
+
+
 
             } else {
                 //todo 录制
@@ -116,8 +122,9 @@ public class CustomCameraActivity extends AppCompatActivity {
 
         });
 
-        findViewById(R.id.btn_zoom).setOnClickListener(v -> {
+        findViewById(R.id.img).setOnClickListener(v -> {
             //todo 调焦，需要判断手机是否支持
+            mCamera.autoFocus(this);
         });
     }
 
@@ -206,7 +213,9 @@ public class CustomCameraActivity extends AppCompatActivity {
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+        mMediaRecorder.setMaxDuration(10000);
         mMediaRecorder.setOutputFile(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
+        System.out.println(getOutputMediaFile(MEDIA_TYPE_VIDEO).toString());
         mMediaRecorder.setPreviewDisplay(mSurfaceView.getHolder().getSurface());
         mMediaRecorder.setOrientationHint(rotationDegree);
 
@@ -273,4 +282,13 @@ public class CustomCameraActivity extends AppCompatActivity {
         return optimalSize;
     }
 
+    @Override
+    public void onAutoFocus(boolean b, Camera camera) {
+        if(b){
+
+        }
+        else{
+            camera.autoFocus(this);
+        }
+    }
 }
